@@ -1,0 +1,20 @@
+.gitignore
+.eslintignore
+.eslintrc.yml
+.editorconfig
+.nycrc
+
+Jenkinsfile
+
+# MacOS
+.DS_Store
+
+# Dependency directories
+node_modules/
+
+# SonarQube scanner
+.scannerwork
+sonar-project.properties
+
+# default public folder
+public
