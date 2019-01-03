@@ -4,6 +4,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+!logs/.keep
 
 # Runtime data
 pids
@@ -56,6 +57,11 @@ typings/
 
 # dotenv environment variables file
 .env
+.env-*
+
+# config.json
+config.json
+config-*.json
 
 # next.js build output
 .next

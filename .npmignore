@@ -4,7 +4,18 @@
 .editorconfig
 .nycrc
 
+logs
+!logs/.keep
+
 Jenkinsfile
+
+# dotenv environment variables file
+.env
+.env-*
+
+# config.json
+config.json
+config-*.json
 
 # MacOS
 .DS_Store

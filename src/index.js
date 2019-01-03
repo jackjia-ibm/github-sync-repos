@@ -6,4 +6,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-module.exports = {};
+const GitHub = require('./libs/github');
+
+module.exports = {
+  GitHub,
+};

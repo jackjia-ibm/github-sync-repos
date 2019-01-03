@@ -1,10 +1,10 @@
 {
-  "name": "github-label-sync",
+  "name": "github-sync-repos",
   "version": "0.0.1",
   "description": "Sync GitHub labels across organization",
   "main": "src/index.js",
   "bin": {
-    "gls": "src/cli.js"
+    "gsr": "src/cli.js"
   },
   "scripts": {
     "lint": "eslint .",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jackjia-ibm/github-label-sync.git"
+    "url": "git+https://github.com/jackjia-ibm/github-sync-repos.git"
   },
   "author": "Jack T. Jia <jack-tiefeng.jia@ibm.com>",
   "license": "EPL-2.0",
   "bugs": {
-    "url": "https://github.com/jackjia-ibm/github-label-sync/issues"
+    "url": "https://github.com/jackjia-ibm/github-sync-repos/issues"
   },
-  "homepage": "https://github.com/jackjia-ibm/github-label-sync#readme",
+  "homepage": "https://github.com/jackjia-ibm/github-sync-repos#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "debug": "^4.1.1",
@@ -31,6 +31,10 @@
     "nyc": "^13.1.0"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
+    "dotenv": "^6.2.0",
+    "github-api": "^3.0.0",
+    "winston": "^3.1.0",
     "yargs": "^12.0.5"
   }
 }
