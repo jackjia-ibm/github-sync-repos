@@ -7,11 +7,11 @@
  */
 
 const chalk = require('chalk');
-const { GitHub } = require('../libs/github');
+const { GitHub } = require('../../libs/github');
 const {
   RESPONSE_FORMAT_JSON,
   RESPONSE_FORMAT_PLAIN,
-} = require('../libs/constants');
+} = require('../../libs/constants');
 
 const builder = (yargs) => {
   yargs.positional('repository', {
@@ -26,16 +26,15 @@ const handler = async (options) => {
   const repo = options.repository || options.templateRepo;
 
   try {
-    const data = await gh.listLabels(repo);
+    const data = await gh.listMilestones(repo);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
     } else if (options.format === RESPONSE_FORMAT_PLAIN) {
-      logger.info(`Total ${data.length} label(s) in repository ${chalk.blue(repo)}:\n`);
+      logger.info(`Total ${data.length} milestone(s) in repository ${chalk.blue(repo)}:\n`);
 
       for (let one of data) {
-        const color = `#${one.color}`;
-        logger.info(` - ${chalk.bgHex(color).black(one.name)}`);
+        logger.info(` - ${chalk.bgYellow.black(one.title)}: ${one.description}`);
       }
     }
   } catch (err) {
@@ -48,8 +47,8 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'ls-labels [repository]',
-  description: 'List labels of a repository.',
+  command: 'ls [repository]',
+  description: 'List milestones of a repository.',
   builder,
   handler,
 };
