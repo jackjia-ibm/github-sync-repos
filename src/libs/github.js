@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-const GH = require('github-api');
+const octokit = require('@octokit/rest')();
 
 class GitHub {
   constructor(options) {
@@ -17,19 +17,25 @@ class GitHub {
 
     // init GitHub API instance
     const { username, password, token } = (options);
-    if (!token && !(username && password)) {
+    if (token) {
+      octokit.authenticate({
+        type: 'token',
+        token,
+      });
+    } else if (username && password) {
+      octokit.authenticate({
+        type: 'basic',
+        username,
+        password,
+      });
+    } else {
       throw new Error('GitHub username/password or token is required.');
     }
-    this.gh = new GH({ username, password, token });
-    this.ghUser = this.gh.getUser();
+    this.octokit = octokit;
 
     // init organization
     const { organization } = (options);
     this.organization = organization;
-    // init github org or user object
-    if (this.organization) {
-      this.ghOrg = this.gh.getOrganization(this.organization);
-    }
 
     // assign template repository
     const { templateRepo } = (options);
@@ -41,49 +47,51 @@ class GitHub {
   }
 
   async getUserProfile() {
-    if (this.ghUserProfile) {
-      return this.ghUserProfile;
+    if (this._profile) {
+      return this._profile;
     }
 
-    const profile = await this.ghUser.getProfile();
+    const profile = await this.octokit.users.getAuthenticated();
 
     if (!profile || !profile.data) {
       this.logger.debug(`API Response: ${profile}`);
       throw new Error('Invalid API response.');
     }
 
-    this.ghUserProfile = profile && profile.data;
-    return this.ghUserProfile;
+    this._profile = profile && profile.data;
+    return this._profile;
   }
 
-  async getIssues(repository) {
-    let user;
-    if (this.organization) {
-      user = this.organization;
-    } else {
-      const profile = await this.getUserProfile();
-      user = profile.login;
+  async _getOwner() {
+    if (this._owner) {
+      return this._owner;
     }
 
-    return this.gh.getIssues(user, repository);
+    let owner;
+
+    if (this.organization) {
+      owner = this.organization;
+    } else {
+      const profile = await this.getUserProfile();
+      owner = profile.login;
+    }
+
+    this._owner = owner;
+    return this._owner;
   }
 
   async listRepositories() {
     let repos;
 
+    const owner = await this._getOwner();
     if (this.organization) {
-      repos = await this.ghOrg.getRepos();
+      repos = await this.octokit.paginate('GET /orgs/:org/repos', { org: owner });
     } else {
-      repos = await this.ghUser.listRepos();
-    }
-
-    if (!repos || !repos.data) {
-      this.logger.debug(`API Response: ${repos}`);
-      throw new Error('Invalid API response.');
+      repos = await this.octokit.paginate('GET /users/:username/repos', { username: owner });
     }
 
     // only return direct owned repos
-    return repos.data.filter(repo => {
+    return repos.filter(repo => {
       const repoOwnerType = repo && repo.owner && repo.owner.type;
       const repoOwnerName = repo && repo.owner && repo.owner.login;
       if (this.organization) {
@@ -95,35 +103,28 @@ class GitHub {
   }
 
   async listLabels(repository) {
-    const issues = await this.getIssues(repository);
-    const labels = await issues.listLabels();
+    const owner = await this._getOwner();
+    const labels = await this.octokit.paginate('GET /repos/:owner/:repo/labels', {
+      owner,
+      repo: repository,
+    });
 
-    if (!labels || !labels.data) {
-      this.logger.debug(`API Response: ${labels}`);
-      throw new Error('Invalid API response.');
-    }
-
-    return labels && labels.data;
+    return labels;
   }
 
   async listMilestones(repository, includeClosed = false) {
-    const issues = await this.getIssues(repository);
-    let options = {};
-    if (includeClosed) {
-      options.state = 'all';
-    }
-    const milestones = await issues.listMilestones(options);
+    const owner = await this._getOwner();
+    const milestones = await this.octokit.paginate('GET /repos/:owner/:repo/milestones', {
+      owner,
+      repo: repository,
+      state: includeClosed ? 'all' : 'open',
+    });
 
-    if (!milestones || !milestones.data) {
-      this.logger.debug(`API Response: ${milestones}`);
-      throw new Error('Invalid API response.');
-    }
-
-    return milestones && milestones.data;
+    return milestones;
   }
 
   async findMilesoneByTitle(repository, title) {
-    const milestones = await this.listMilestones(repository);
+    const milestones = await this.listMilestones(repository, true);
     let milestone = null;
     for (let ms of milestones) {
       if (ms.title === title) {
@@ -139,8 +140,12 @@ class GitHub {
   }
 
   async findMilestoneById(repository, id) {
-    const issues = await this.getIssues(repository);
-    const res = await issues.getMilestone(id);
+    const owner = await this._getOwner();
+    const res = await octokit.issues.getMilestone({
+      owner,
+      repo: repository,
+      number: id,
+    });
 
     if (!res || !res.data) {
       this.logger.debug(`API Response: ${res}`);
@@ -166,9 +171,13 @@ class GitHub {
   }
 
   async createMilestone(repository, title, description = null, dueOn = null, state = null) {
-    const issues = await this.getIssues(repository);
+    const owner = await this._getOwner();
     const milestoneData = this._normalizeMilestoneDate(title, description, dueOn, state);
-    const res = await issues.createMilestone(milestoneData);
+    const res = await this.octokit.issues.createMilestone({
+      owner,
+      repo: repository,
+      ...milestoneData,
+    });
 
     if (!res || !res.data) {
       this.logger.debug(`API Response: ${res}`);
@@ -187,34 +196,31 @@ class GitHub {
       // ignore err
     }
 
-    const milestoneData = this._normalizeMilestoneDate(title, description, dueOn, state);
-
-    const issues = await this.getIssues(repository);
     let res = null;
     if (milestoneId) { // update
-      res = await issues.editMilestone(milestoneId, milestoneData);
+      const milestoneData = this._normalizeMilestoneDate(title, description, dueOn, state);
+      res = await this.updateMilestoneById(repository, milestoneId, milestoneData);
     } else {
-      res = await issues.createMilestone(milestoneData);
-    }
-
-    if (!res || !res.data) {
-      this.logger.debug(`API Response: ${res}`);
-      throw new Error('Invalid API response.');
+      res = await this.createMilestone(repository, title, description, dueOn, state);
     }
 
     if (milestoneId) {
-      res.data._action = 'updated';
+      res._action = 'updated';
     } else {
-      res.data._action = 'created';
+      res._action = 'created';
     }
 
-    return res && res.data;
+    return res;
   }
 
   async updateMilestoneById(repository, id, updates) {
-    const issues = await this.getIssues(repository);
-
-    const res = await issues.editMilestone(id, updates);
+    const owner = await this._getOwner();
+    const res = await octokit.issues.updateMilestone({
+      owner,
+      repo: repository,
+      number: id,
+      ...updates,
+    });
 
     if (!res || !res.data) {
       this.logger.debug(`API Response: ${res}`);
@@ -225,9 +231,12 @@ class GitHub {
   }
 
   async deleteMilestoneById(repository, id) {
-    const issues = await this.getIssues(repository);
-
-    const res = await issues.deleteMilestone(id);
+    const owner = await this._getOwner();
+    const res = await this.octokit.issues.deleteMilestone({
+      owner,
+      repo: repository,
+      number: id
+    });
 
     if (!res || !res.status || res.status !== 204) {
       this.logger.debug(`API Response: ${JSON.stringify(res)}`);

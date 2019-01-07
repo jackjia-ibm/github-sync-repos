@@ -14,10 +14,14 @@ const {
 } = require('../../libs/constants');
 
 const builder = (yargs) => {
-  yargs.positional('repository', {
-    describe: 'Repository name. Default value is the template repository.',
-    type: 'string',
-  });
+  yargs
+    .options({
+      repository: {
+        alias: 'repo',
+        description: 'Repository name. List label(s) of this repository. Default value is the template repository.',
+        group: 'Milestone Options',
+      },
+    });
 };
 
 const handler = async (options) => {
@@ -51,7 +55,7 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'list [repository]',
+  command: 'list [options]',
   aliases: ['ls'],
   description: 'List/add/delete labels of a repository.',
   builder,

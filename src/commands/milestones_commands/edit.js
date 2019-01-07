@@ -69,7 +69,7 @@ const handler = async (options) => {
       updates.description = options.description;
     }
     if (options.dueOn) {
-      updates.dueOn = options.dueOn;
+      updates.due_on = options.dueOn;
     }
     if (options.state) {
       updates.state = options.state;
