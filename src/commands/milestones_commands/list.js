@@ -41,6 +41,9 @@ const handler = async (options) => {
     if (err && err.response && err.response.status && err.response.status === 404) {
       throw new Error(`Repository ${chalk.red(repo)} doesn't exist.`);
     } else {
+      if (options.verbose) {
+        logger.debug(`Error: ${JSON.stringify(err)}`);
+      }
       throw err;
     }
   }

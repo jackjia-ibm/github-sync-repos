@@ -46,12 +46,20 @@ const handler = async (options) => {
       throw new Error(`Repository ${chalk.red(repo)} doesn't exist.`);
     } else if (err && err.response && err.response.status && err.response.status === 422 &&
       err.response.data) {
+      if (options.verbose) {
+        logger.debug(`Error: ${JSON.stringify(err)}`);
+      }
       let messages = [`${err.response.data.message}:`];
-      for (let one of err.response.data.errors) {
-        messages.push(JSON.stringify(one));
+      if (err.response.data.errors) {
+        for (let one of err.response.data.errors) {
+          messages.push(JSON.stringify(one));
+        }
       }
       throw new Error(messages.join(' '));
     } else {
+      if (options.verbose) {
+        logger.debug(`Error: ${JSON.stringify(err)}`);
+      }
       throw err;
     }
   }

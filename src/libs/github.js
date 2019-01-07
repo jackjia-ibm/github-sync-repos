@@ -82,7 +82,16 @@ class GitHub {
       throw new Error('Invalid API response.');
     }
 
-    return repos && repos.data;
+    // only return direct owned repos
+    return repos.data.filter(repo => {
+      const repoOwnerType = repo && repo.owner && repo.owner.type;
+      const repoOwnerName = repo && repo.owner && repo.owner.login;
+      if (this.organization) {
+        return repoOwnerType === 'Organization' && repoOwnerName === this.organization;
+      } else {
+        return repoOwnerType === 'User';
+      }
+    });
   }
 
   async listLabels(repository) {
