@@ -24,23 +24,33 @@ const handler = async (options) => {
   const logger = options.logger;
   const gh = new GitHub(options);
   const repo = options.repository || options.templateRepo;
+  const title = options.title;
+  const description = options.description;
+  const dueOn = options.dueOn;
+  const state = options.state;
 
   try {
-    const data = await gh.listLabels(repo);
+    const data = await gh.createMilestone(repo, title, description, dueOn, state);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
     } else if (options.format === RESPONSE_FORMAT_PLAIN) {
-      logger.info(`Total ${data.length} label(s) in repository ${chalk.blue(repo)}:\n`);
-
-      for (let one of data) {
-        const color = `#${one.color}`;
-        logger.info(` - ${chalk.bgHex(color).black(one.name)}`);
+      if (data.id) {
+        logger.info(`"${chalk.blue(data.title)}" is created successfully.`);
+      } else {
+        throw new Error('Milestone is failed to create due to unknown failure.');
       }
     }
   } catch (err) {
     if (err && err.response && err.response.status && err.response.status === 404) {
       throw new Error(`Repository ${chalk.red(repo)} doesn't exist.`);
+    } else if (err && err.response && err.response.status && err.response.status === 422 &&
+      err.response.data) {
+      let messages = [`${err.response.data.message}:`];
+      for (let one of err.response.data.errors) {
+        messages.push(JSON.stringify(one));
+      }
+      throw new Error(messages.join(' '));
     } else {
       throw err;
     }
@@ -48,8 +58,9 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'ls [repository]',
-  description: 'List/add/delete labels of a repository.',
+  command: 'add <repository> <title> [description] [due-on] [state]',
+  aliases: ['create'],
+  description: 'Add milestone to a repository.',
   builder,
   handler,
 };

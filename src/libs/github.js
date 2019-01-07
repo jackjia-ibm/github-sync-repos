@@ -108,6 +108,28 @@ class GitHub {
 
     return milestones && milestones.data;
   }
+
+  async createMilestone(repository, title, description = null, dueOn = null, state = null) {
+    const issues = await this.getIssues(repository);
+    let milestoneData = { title };
+    if (description) {
+      milestoneData.description = description;
+    }
+    if (dueOn) {
+      milestoneData.due_on = dueOn;
+    }
+    if (state) {
+      milestoneData.state = state;
+    }
+    const res = await issues.createMilestone(milestoneData);
+
+    if (!res || !res.data) {
+      this.logger.debug(`API Response: ${res}`);
+      throw new Error('Invalid API response.');
+    }
+
+    return res && res.data;
+  }
 }
 
 module.exports = {

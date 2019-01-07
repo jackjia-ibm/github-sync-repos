@@ -40,6 +40,7 @@ const handler = async (options) => {
 };
 
 module.exports = {
+  aliases: ['ls'],
   description: 'List repositories of organization or user.',
   handler,
 };

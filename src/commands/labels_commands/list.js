@@ -26,15 +26,16 @@ const handler = async (options) => {
   const repo = options.repository || options.templateRepo;
 
   try {
-    const data = await gh.listMilestones(repo);
+    const data = await gh.listLabels(repo);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
     } else if (options.format === RESPONSE_FORMAT_PLAIN) {
-      logger.info(`Total ${data.length} milestone(s) in repository ${chalk.blue(repo)}:\n`);
+      logger.info(`Total ${data.length} label(s) in repository ${chalk.blue(repo)}:\n`);
 
       for (let one of data) {
-        logger.info(` - ${chalk.bgYellow.black(one.title)}: ${one.description}`);
+        const color = `#${one.color}`;
+        logger.info(` - ${chalk.bgHex(color).black(one.name)}`);
       }
     }
   } catch (err) {
@@ -47,8 +48,9 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'ls [repository]',
-  description: 'List milestones of a repository.',
+  command: 'list [repository]',
+  aliases: ['ls'],
+  description: 'List/add/delete labels of a repository.',
   builder,
   handler,
 };
