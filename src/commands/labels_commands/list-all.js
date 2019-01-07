@@ -8,10 +8,6 @@
 
 const chalk = require('chalk');
 const { GitHub } = require('../../libs/github');
-const {
-  RESPONSE_FORMAT_JSON,
-  RESPONSE_FORMAT_PLAIN,
-} = require('../../libs/constants');
 
 const handler = async (options) => {
   const logger = options.logger;

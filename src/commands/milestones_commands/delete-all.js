@@ -26,7 +26,7 @@ const handler = async (options) => {
   for (let repo of repos) {
     try {
       const milestone = await gh.findMilesoneByTitle(repo.name, options.milestone);
-      const data = await gh.deleteMilestoneById(repo.name, milestone.number);
+      await gh.deleteMilestoneById(repo.name, milestone.number);
 
       logger.info(` - ${chalk.blue(repo.name)}: ${chalk.green('success')}`);
     } catch (err) {
