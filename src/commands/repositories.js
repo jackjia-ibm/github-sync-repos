@@ -12,7 +12,7 @@ const builder = (yargs) => {
 
 module.exports = {
   command: 'repositories <command>',
-  aliases: ['repos'],
+  aliases: ['repos', 'repo', 'rp'],
   description: 'List repositories of organization or user.',
   builder,
 };

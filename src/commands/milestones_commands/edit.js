@@ -16,13 +16,17 @@ const {
 const builder = (yargs) => {
   yargs
     .positional('milesone', {
-      describe: 'Milestone title.',
+      describe: 'Miletsone to edit. Can be miletsone ID or title.',
       type: 'string',
     })
     .options({
       repository: {
         alias: 'repo',
         description: 'Repository name. Add milestone to this repository. Default value is the template repository.',
+        group: 'Milestone Options',
+      },
+      title: {
+        description: 'Milestone title.',
         group: 'Milestone Options',
       },
       description: {
@@ -46,34 +50,44 @@ const handler = async (options) => {
   const logger = options.logger;
   const gh = new GitHub(options);
   const repo = options.repository || options.templateRepo;
-  const title = options.milesone;
-  const description = options.description;
-  const dueOn = options.dueOn;
-  const state = options.state;
 
   try {
-    const data = await gh.createMilestone(repo, title, description, dueOn, state);
+    let id = options.milestone;
+    if (!`${id}`.match(/^[0-9]+$/)) {
+      const milestone = await gh.findMilesoneByTitle(repo, id);
+      id = milestone.number;
+    }
+
+    if (!options.title && !options.description && !options.dueOn && !options.state) {
+      throw new Error('Nothing to update.');
+    }
+    let updates = {};
+    if (options.title) {
+      updates.title = options.title;
+    }
+    if (options.description) {
+      updates.description = options.description;
+    }
+    if (options.dueOn) {
+      updates.dueOn = options.dueOn;
+    }
+    if (options.state) {
+      updates.state = options.state;
+    }
+    const data = await gh.updateMilestoneById(repo, id, updates);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
     } else if (options.format === RESPONSE_FORMAT_PLAIN) {
       if (data.id) {
-        logger.info(`"${chalk.blue(data.title)}" is created successfully.`);
+        logger.info(`"${chalk.blue(data.title)}" is updated successfully.`);
       } else {
         throw new Error('Milestone is failed to create due to unknown failure.');
       }
     }
   } catch (err) {
     if (err && err.response && err.response.status && err.response.status === 404) {
-      throw new Error(`Repository ${chalk.red(repo)} doesn't exist.`);
-    } else if (err && err.response && err.response.status && err.response.status === 422 &&
-      err.response.data && err.response.data.message === 'Validation Failed' &&
-      err.response.data.errors && err.response.data.errors[0] &&
-      err.response.data.errors[0].code === 'already_exists') {
-      if (options.verbose) {
-        logger.debug(err);
-      }
-      throw new Error(`Milestone "${title}" already exists in repository "${repo}"`);
+      throw new Error(`Repository ${chalk.red(repo)} or milestone "${chalk.red(options.milestone)}" doesn't exist.`);
     } else {
       if (options.verbose) {
         logger.debug(err);
@@ -84,9 +98,9 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'add <milesone> [options]',
-  aliases: ['create'],
-  description: 'Add milestone to a repository.',
+  command: 'edit <milestone> [options]',
+  aliases: ['update'],
+  description: 'Update milestone information.',
   builder,
   handler,
 };

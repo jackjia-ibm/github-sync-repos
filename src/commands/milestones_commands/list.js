@@ -14,10 +14,20 @@ const {
 } = require('../../libs/constants');
 
 const builder = (yargs) => {
-  yargs.positional('repository', {
-    describe: 'Repository name. Default value is the template repository.',
-    type: 'string',
-  });
+  yargs
+    .positional('repository', {
+      describe: 'Repository name. Default value is the template repository.',
+      type: 'string',
+    })
+    .options({
+      all: {
+        alias: 'a',
+        default: false,
+        description: 'Show all milestones include closed.',
+        type: 'boolean',
+        group: 'Milestone Options',
+      }
+    });
 };
 
 const handler = async (options) => {
@@ -26,7 +36,7 @@ const handler = async (options) => {
   const repo = options.repository || options.templateRepo;
 
   try {
-    const data = await gh.listMilestones(repo);
+    const data = await gh.listMilestones(repo, options.all);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
@@ -34,7 +44,19 @@ const handler = async (options) => {
       logger.info(`Total ${data.length} milestone(s) in repository ${chalk.blue(repo)}:\n`);
 
       for (let one of data) {
-        logger.info(` - ${chalk.bgYellow.black(one.title)}: ${one.description || ''}${one.due_on ? chalk.magenta(' (due on ' + one.due_on + ')') : ''}`);
+        let info = [`#${chalk.blue(one.number)}`];
+        if (one.state === 'open') {
+          info.push(`${chalk.bgYellow.black(one.title)}:`);
+        } else {
+          info.push(`${chalk.bgBlack.gray.strikethrough(one.title)}:`);
+        }
+        if (one.description) {
+          info.push(one.description);
+        }
+        if (one.due_on) {
+          info.push(chalk.magenta(' (📅 ' + one.due_on + ')'));
+        }
+        logger.info(` - ${info.join(' ')}`);
       }
     }
   } catch (err) {
@@ -42,7 +64,7 @@ const handler = async (options) => {
       throw new Error(`Repository ${chalk.red(repo)} doesn't exist.`);
     } else {
       if (options.verbose) {
-        logger.debug(`Error: ${JSON.stringify(err)}`);
+        logger.debug(err);
       }
       throw err;
     }
@@ -50,7 +72,7 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'list [repository]',
+  command: 'list [repository] [options]',
   aliases: ['ls'],
   description: 'List milestones of a repository.',
   builder,

@@ -106,9 +106,13 @@ class GitHub {
     return labels && labels.data;
   }
 
-  async listMilestones(repository) {
+  async listMilestones(repository, includeClosed = false) {
     const issues = await this.getIssues(repository);
-    const milestones = await issues.listMilestones();
+    let options = {};
+    if (includeClosed) {
+      options.state = 'all';
+    }
+    const milestones = await issues.listMilestones(options);
 
     if (!milestones || !milestones.data) {
       this.logger.debug(`API Response: ${milestones}`);
@@ -134,8 +138,19 @@ class GitHub {
     return milestone;
   }
 
-  async createMilestone(repository, title, description = null, dueOn = null, state = null) {
+  async findMilestoneById(repository, id) {
     const issues = await this.getIssues(repository);
+    const res = await issues.getMilestone(id);
+
+    if (!res || !res.data) {
+      this.logger.debug(`API Response: ${res}`);
+      throw new Error('Invalid API response.');
+    }
+
+    return res && res.data;
+  }
+
+  _normalizeMilestoneDate(title, description = null, dueOn = null, state = null) {
     let milestoneData = { title };
     if (description) {
       milestoneData.description = description;
@@ -146,6 +161,13 @@ class GitHub {
     if (state) {
       milestoneData.state = state;
     }
+
+    return milestoneData;
+  }
+
+  async createMilestone(repository, title, description = null, dueOn = null, state = null) {
+    const issues = await this.getIssues(repository);
+    const milestoneData = this._normalizeMilestoneDate(title, description, dueOn, state);
     const res = await issues.createMilestone(milestoneData);
 
     if (!res || !res.data) {
@@ -156,11 +178,56 @@ class GitHub {
     return res && res.data;
   }
 
-  async deleteMilestone(repository, title) {
-    const milestone = await this.findMilesoneByTitle(repository, title);
+  async createOrUpdateMilestone(repository, title, description = null, dueOn = null, state = null) {
+    let milestoneId = null;
+    try {
+      const milestone = await this.findMilesoneByTitle(repository, title);
+      milestoneId = milestone.number;
+    } catch (err) {
+      // ignore err
+    }
+
+    const milestoneData = this._normalizeMilestoneDate(title, description, dueOn, state);
+
+    const issues = await this.getIssues(repository);
+    let res = null;
+    if (milestoneId) { // update
+      res = await issues.editMilestone(milestoneId, milestoneData);
+    } else {
+      res = await issues.createMilestone(milestoneData);
+    }
+
+    if (!res || !res.data) {
+      this.logger.debug(`API Response: ${res}`);
+      throw new Error('Invalid API response.');
+    }
+
+    if (milestoneId) {
+      res.data._action = 'updated';
+    } else {
+      res.data._action = 'created';
+    }
+
+    return res && res.data;
+  }
+
+  async updateMilestoneById(repository, id, updates) {
     const issues = await this.getIssues(repository);
 
-    const res = await issues.deleteMilestone(milestone.number);
+    const res = await issues.editMilestone(id, updates);
+
+    if (!res || !res.data) {
+      this.logger.debug(`API Response: ${res}`);
+      throw new Error('Invalid API response.');
+    }
+
+    return res && res.data;
+  }
+
+  async deleteMilestoneById(repository, id) {
+    const issues = await this.getIssues(repository);
+
+    const res = await issues.deleteMilestone(id);
 
     if (!res || !res.status || res.status !== 204) {
       this.logger.debug(`API Response: ${JSON.stringify(res)}`);
