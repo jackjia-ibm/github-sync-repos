@@ -24,14 +24,17 @@ To upgrade, you can run the above command again.
 
 To find command help, type `gsr -h`:
 
-```shell
+```
 $ gsr -h
 Usage: gsr [options] <command> [command-options]
 
 Commands:
-  gsr ls-labels [repository]      List labels of a repository.
-  gsr ls-milestones [repository]  List milestones of a repository.
-  gsr ls-repos                    List repositories of organization or user.
+  gsr labels <command>        List/add/delete labels of organization or user.
+                                                                   [aliases: lb]
+  gsr milestones <command>    List/add/delete milestones of a repository.
+                                                                   [aliases: ms]
+  gsr repositories <command>  List repositories of organization or user.
+                                                      [aliases: repos, repo, rp]
 
 GitHub:
   --organization   Github organization name.
