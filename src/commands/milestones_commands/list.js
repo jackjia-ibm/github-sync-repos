@@ -15,13 +15,13 @@ const {
 
 const builder = (yargs) => {
   yargs
-    .positional('repository', {
-      describe: 'Repository name. Default value is the template repository.',
-      type: 'string',
-    })
     .options({
-      all: {
-        alias: 'a',
+      repository: {
+        alias: 'repo',
+        description: 'Repository name. List milestone(s) of this repository. Default value is the template repository.',
+        group: 'Milestone Options',
+      },
+      'include-closed': {
         default: false,
         description: 'Show all milestones include closed.',
         type: 'boolean',
@@ -36,7 +36,7 @@ const handler = async (options) => {
   const repo = options.repository || options.templateRepo;
 
   try {
-    const data = await gh.listMilestones(repo, options.all);
+    const data = await gh.listMilestones(repo, options.includeClosed);
 
     if (options.format === RESPONSE_FORMAT_JSON) {
       logger.info(JSON.stringify(data));
@@ -72,7 +72,7 @@ const handler = async (options) => {
 };
 
 module.exports = {
-  command: 'list [repository] [options]',
+  command: 'list [options]',
   aliases: ['ls'],
   description: 'List milestones of a repository.',
   builder,
