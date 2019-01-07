@@ -1,6 +1,6 @@
 # github-sync-repos
 
-GitHub tools to synchronize milestones or labels across all organization repositories.
+GitHub tools to synchronize milestones or labels across all organization/user repositories.
 
 ## Prerequisites
 
