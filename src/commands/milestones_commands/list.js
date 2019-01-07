@@ -34,7 +34,7 @@ const handler = async (options) => {
       logger.info(`Total ${data.length} milestone(s) in repository ${chalk.blue(repo)}:\n`);
 
       for (let one of data) {
-        logger.info(` - ${chalk.bgYellow.black(one.title)}: ${one.description || ''}`);
+        logger.info(` - ${chalk.bgYellow.black(one.title)}: ${one.description || ''}${one.due_on ? chalk.magenta(' (due on ' + one.due_on + ')') : ''}`);
       }
     }
   } catch (err) {

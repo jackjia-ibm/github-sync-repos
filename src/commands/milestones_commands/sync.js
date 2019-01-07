@@ -27,18 +27,8 @@ const handler = async (options) => {
   const milestoneTitle = options.milestone;
 
   try {
-    let milestone = null;
-    const milestones = await gh.listMilestones(repo);
-    for (let ms of milestones) {
-      if (ms.title === milestoneTitle) {
-        milestone = ms;
-        break;
-      }
-    }
-    if (!milestone) {
-      throw new Error(`Cannot find milestone "${milestoneTitle}" in repository "${repo}"`);
-    }
-    logger.info(`Milestone "${chalk.blue(milestoneTitle)}" is found in repository "${chalk.blue(repo)}".`)
+    const milestone = await gh.findMilesoneByTitle(repo, milestoneTitle);
+    logger.info(`Milestone "${chalk.blue(milestoneTitle)}" is found in repository "${chalk.blue(repo)}".`);
 
     const repos = await gh.listRepositories();
     logger.info(`Total ${repos.length} repositories to sync:`);
@@ -49,7 +39,7 @@ const handler = async (options) => {
       }
       try {
         const data = await gh.createMilestone(oneRepo.name,
-          milestone.title, milestone.description, milestone.dueOn, milestone.state);
+          milestone.title, milestone.description, milestone.due_on);
         if (data && data.id) {
           logger.info(` - ${chalk.blue(oneRepo.name)}: ${chalk.green('created')}`);
         } else {

@@ -118,6 +118,22 @@ class GitHub {
     return milestones && milestones.data;
   }
 
+  async findMilesoneByTitle(repository, title) {
+    const milestones = await this.listMilestones(repository);
+    let milestone = null;
+    for (let ms of milestones) {
+      if (ms.title === title) {
+        milestone = ms;
+      }
+    }
+
+    if (!milestone) {
+      throw new Error(`Cannot find milestone "${title}" in repository "${repository}"`);
+    }
+
+    return milestone;
+  }
+
   async createMilestone(repository, title, description = null, dueOn = null, state = null) {
     const issues = await this.getIssues(repository);
     let milestoneData = { title };
@@ -138,6 +154,20 @@ class GitHub {
     }
 
     return res && res.data;
+  }
+
+  async deleteMilestone(repository, title) {
+    const milestone = await this.findMilesoneByTitle(repository, title);
+    const issues = await this.getIssues(repository);
+
+    const res = await issues.deleteMilestone(milestone.number);
+
+    if (!res || !res.status || res.status !== 204) {
+      this.logger.debug(`API Response: ${JSON.stringify(res)}`);
+      throw new Error('Invalid API response.');
+    }
+
+    return true;
   }
 }
 
