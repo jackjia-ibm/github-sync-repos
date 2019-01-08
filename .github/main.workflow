@@ -1,6 +1,6 @@
 workflow "Lint and Test" {
   on = "push"
-  resolves = ["GitHub Action for npm"]
+  resolves = ["Test"]
 }
 
 action "Install" {
@@ -14,7 +14,7 @@ action "Lint" {
   runs = "npm run lint"
 }
 
-action "GitHub Action for npm" {
+action "Test" {
   uses = "actions/npm@e7aaefed7c9f2e83d493ff810f17fa5ccd7ed437"
   needs = ["Lint"]
   runs = "npm test"
