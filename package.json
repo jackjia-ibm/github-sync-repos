@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm link && mocha"
   },
   "repository": {
     "type": "git",
@@ -25,9 +25,6 @@
     "debug": "^4.1.1",
     "eslint": "^5.11.1",
     "mocha": "^5.2.0",
-    "mocha-jenkins-reporter": "^0.4.1",
-    "mocha-multi-reporters": "^1.1.7",
-    "mochawesome": "^3.1.1",
     "nyc": "^13.1.0"
   },
   "dependencies": {
