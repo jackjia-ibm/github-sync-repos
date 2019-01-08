@@ -7,16 +7,14 @@
  */
 
 const expect = require('chai').expect;
-const debug = require('debug')('test:cli:version');
+const debug = require('debug')('test:options:version');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const { prepareCliCommand } = require('../utils');
 
-describe('cli version', function() {
-  it('command should return version without error', async function() {
-    process.stdout.write('SHOW ENVIRONMENT VARIABLES START =============\n');
-    process.stdout.write(JSON.stringify(process.env));
-    process.stdout.write('SHOW ENVIRONMENT VARIABLES END =============\n');
-    const result = await exec('gsr --version');
+describe('version', function() {
+  it('should return version without error', async function() {
+    const result = await exec(prepareCliCommand(['--version']));
 
     debug('result:', result);
 
