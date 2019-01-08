@@ -39,8 +39,12 @@ describe('should be able to list repositories', function() {
 
     expect(result.stderr).to.be.empty;
     expect(result.stdout).to.match(/Total [0-9]+ repositories in user/);
-    expect(result.stdout).to.include(`- ${GITHUB_TEST_REPO1} <== template repository\n`);
-    expect(result.stdout).to.include(`- ${GITHUB_TEST_REPO2}\n`);
-    expect(result.stdout).to.include(`- ${GITHUB_TEST_REPO3}\n`);
+    for (let one of [GITHUB_TEST_REPO1, GITHUB_TEST_REPO2, GITHUB_TEST_REPO3]) {
+      if (one === GITHUB_TEMPLATE_REPO) {
+        expect(result.stdout).to.include(`- ${one} <== template repository\n`);
+      } else {
+        expect(result.stdout).to.include(`- ${one}\n`);
+      }
+    }
   });
 });
