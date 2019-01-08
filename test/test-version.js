@@ -14,7 +14,7 @@ const exec = util.promisify(require('child_process').exec);
 describe('cli version', function() {
   it('command should return version without error', async function() {
     process.stdout.write('SHOW ENVIRONMENT VARIABLES START =============\n');
-    process.stdout.write(process.env);
+    process.stdout.write(JSON.stringify(process.env));
     process.stdout.write('SHOW ENVIRONMENT VARIABLES END =============\n');
     const result = await exec('gsr --version');
 
