@@ -15,7 +15,8 @@ const { GITHUB_TEST_REPO2, GITHUB_TEMPLATE_REPO } = require('../constants');
 
 describe('should be able to list labels of repository', function() {
   it('should return error if no repository is provided', async function() {
-    let result
+    let result;
+
     try {
       result = await exec(prepareCliCommand(['labels', 'list'], true, false, false));
     } catch (err) {
@@ -41,8 +42,8 @@ describe('should be able to list labels of repository', function() {
     expect(result.stderr).to.be.empty;
     expect(result.stdout).to.match(new RegExp(`Total [0-9]+ label\\(s\\) in repository ${GITHUB_TEMPLATE_REPO}:`));
     // below are the default labels created by GitHub for each repository
-    expect(result.stdout).to.include(`- bug\n`);
-    expect(result.stdout).to.include(`- duplicate\n`);
+    expect(result.stdout).to.include('- bug\n');
+    expect(result.stdout).to.include('- duplicate\n');
   });
 
   it('should return label list of specified repository without error', async function() {
@@ -56,7 +57,7 @@ describe('should be able to list labels of repository', function() {
     expect(result.stderr).to.be.empty;
     expect(result.stdout).to.match(new RegExp(`Total [0-9]+ label\\(s\\) in repository ${GITHUB_TEST_REPO2}:`));
     // below are the default labels created by GitHub for each repository
-    expect(result.stdout).to.include(`- bug\n`);
-    expect(result.stdout).to.include(`- duplicate\n`);
+    expect(result.stdout).to.include('- bug\n');
+    expect(result.stdout).to.include('- duplicate\n');
   });
 });
