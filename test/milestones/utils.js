@@ -12,10 +12,11 @@ const exec = util.promisify(require('child_process').exec);
 const chalk = require('chalk');
 const { prepareCliCommand, getRandom } = require('../utils');
 
-const createTestMilestone = async (repository = null, title = null, description = null, dueOn = null) => {
+const createTestMilestone = async (repository = null,
+  title = null, description = null, dueOn = null,
+  allowList = true, allowDelete = true) => {
   let extraCreateParams = [],
     extraListParams = [],
-    extraDeleteParams = [],
     useTemplateRepo = true;
   let resultCreate, resultList, resultDelete;
   const milestone = title || `test-milestone-${getRandom(100000000, 999999999)}`;
@@ -25,8 +26,6 @@ const createTestMilestone = async (repository = null, title = null, description 
     extraCreateParams.push(repository);
     extraListParams.push('--repository');
     extraListParams.push(repository);
-    extraDeleteParams.push('--repository');
-    extraDeleteParams.push(repository);
     useTemplateRepo = false;
   }
   if (description) {
@@ -46,20 +45,18 @@ const createTestMilestone = async (repository = null, title = null, description 
     resultCreate = err;
     debug(`Failed to create milestone: ${err}`);
   } finally {
-    // list milestones
-    try {
-      resultList = await exec(prepareCliCommand(['milestones', 'list', ...extraListParams], true, false, useTemplateRepo));
-    } catch (err1) {
-      resultList = err1;
-      debug(`Failed to list milestones: ${err1}`);
+    if (allowList) {
+      // list milestones
+      try {
+        resultList = await exec(prepareCliCommand(['milestones', 'list', ...extraListParams], true, false, useTemplateRepo));
+      } catch (err1) {
+        resultList = err1;
+        debug(`Failed to list milestones: ${err1}`);
+      }
     }
-    // delete the milestone created
-    try {
-      resultDelete = await exec(prepareCliCommand(['milestones', 'delete', milestone, ...extraDeleteParams], true, false, useTemplateRepo));
-      debug(`Milestone ${chalk.blue(milestone)} is deleted.`);
-    } catch (err2) {
-      resultDelete = err2;
-      debug(`Failed to delete milestone created: ${err2}`);
+    if (allowDelete) {
+      // delete the milestone created
+      resultDelete = await deleteTestMilestone(repository, milestone);
     }
   }
 
@@ -71,6 +68,32 @@ const createTestMilestone = async (repository = null, title = null, description 
   };
 };
 
+const deleteTestMilestone = async (repository = null, title = null) => {
+  let resultDelete;
+  let extraDeleteParams = [],
+    useTemplateRepo = true;
+  if (repository) {
+    extraDeleteParams.push('--repository');
+    extraDeleteParams.push(repository);
+    useTemplateRepo = false;
+  }
+  if (!title) {
+    throw new Error('Milestone is required.');
+  }
+
+  // delete the milestone created
+  try {
+    resultDelete = await exec(prepareCliCommand(['milestones', 'delete', title, ...extraDeleteParams], true, false, useTemplateRepo));
+    debug(`Milestone ${chalk.blue(title)} is deleted.`);
+  } catch (err) {
+    resultDelete = err;
+    debug(`Failed to delete milestone created: ${err}`);
+  }
+
+  return resultDelete;
+};
+
 module.exports = {
   createTestMilestone,
+  deleteTestMilestone,
 };
