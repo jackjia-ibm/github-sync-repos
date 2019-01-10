@@ -7,7 +7,7 @@
  */
 
 const expect = require('chai').expect;
-const debug = require('debug')('test:options:token');
+const debug = require('debug')('test:labels:list-all');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const { prepareCliCommand } = require('../utils');

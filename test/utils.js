@@ -31,12 +31,16 @@ const prepareCliCommand = (args, useToken = false, usePassword = false, useTempl
   ] : [];
   const templateRepo = useTemplateRepo ? ['--template-repo', GITHUB_TEMPLATE_REPO] : [];
 
-  const final = [
-    GSR_CLI_COMMAND,
+  const params = [
     ...token,
     ...password,
     ...templateRepo,
     ...args,
+  ].map(one => one.substr(0, 1) === '-' ? one : `"${one}"`);
+
+  const final = [
+    GSR_CLI_COMMAND,
+    ...params,
   ].join(' ');
 
   debug(`Command: ${chalk.blue(final)}`);
