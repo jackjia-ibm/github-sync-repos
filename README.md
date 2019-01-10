@@ -14,7 +14,7 @@ GitHub tools to synchronize milestones or labels across all organization/user re
 
 ## Installation
 
-Install stable version from npm registry.
+Install from npm registry.
 
 ```
 npm install github-sync-repos -g
@@ -54,7 +54,7 @@ Options:
   -h, --help     Show help                                             [boolean]
 ```
 
-For each commands, you can type `gsr ls-labels -h` to get more detail helps.
+For each command, you can type `gsr <command> -h` to get more detail help.
 
 ## Provide GitHub Crendentials
 
