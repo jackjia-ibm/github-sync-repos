@@ -1,6 +1,6 @@
 # github-sync-repos
 
-![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/jackjia-ibm/github-sync-repos)
+![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/jackjia-ibm/github-sync-repos?style=flat-square)
 
 GitHub tools to synchronize milestones or labels across all organization/user repositories.
 
