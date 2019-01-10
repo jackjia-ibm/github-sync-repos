@@ -12,7 +12,7 @@ const debug = require('debug')('test:milestones:list');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const { prepareCliCommand } = require('../utils');
-const { createTestMilestone, deleteTestMilestone } = require('./utils');
+const { createTestMilestone, deleteTestMilestoneFromAll } = require('./utils');
 const { GITHUB_TEST_REPO1, GITHUB_TEST_REPO2, GITHUB_TEST_REPO3, GITHUB_TEMPLATE_REPO } = require('../constants');
 
 let milestoneCreated = [];
@@ -20,8 +20,8 @@ let milestoneCreated = [];
 describe('should be able to sync milestone to all repositories', function() {
   after('delete all milestones created', async function() {
     for (let one of milestoneCreated) {
-      debug(`Deleting ${chalk.blue(one[1])} from ${chalk.blue(one[0] || '(template)')}`);
-      await deleteTestMilestone(one[0], one[1]);
+      debug(`Deleting ${chalk.blue(one)} ...`);
+      await deleteTestMilestoneFromAll(one);
     }
   });
 
@@ -33,7 +33,7 @@ describe('should be able to sync milestone to all repositories', function() {
       list: resultList,
       delete: resultDelete,
     } = await createTestMilestone(null, null, null, null, true, false);
-    milestoneCreated.push([null, milestone]);
+    milestoneCreated.push(milestone);
 
     debug('resultCreate:', resultCreate);
     debug('resultList:', resultList);

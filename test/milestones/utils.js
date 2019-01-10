@@ -81,13 +81,31 @@ const deleteTestMilestone = async (repository = null, title = null) => {
     throw new Error('Milestone is required.');
   }
 
-  // delete the milestone created
+  // delete the milestone
   try {
     resultDelete = await exec(prepareCliCommand(['milestones', 'delete', title, ...extraDeleteParams], true, false, useTemplateRepo));
     debug(`Milestone ${chalk.blue(title)} is deleted.`);
   } catch (err) {
     resultDelete = err;
-    debug(`Failed to delete milestone created: ${err}`);
+    debug(`Failed to delete milestone: ${err}`);
+  }
+
+  return resultDelete;
+};
+
+const deleteTestMilestoneFromAll = async (title) => {
+  let resultDelete;
+  if (!title) {
+    throw new Error('Milestone is required.');
+  }
+
+  // delete the milestone created
+  try {
+    resultDelete = await exec(prepareCliCommand(['milestones', 'delete-all', title], true, false, false));
+    debug(`Milestone ${chalk.blue(title)} is deleted from all repositories.`);
+  } catch (err) {
+    resultDelete = err;
+    debug(`Failed to delete milestone: ${err}`);
   }
 
   return resultDelete;
@@ -96,4 +114,5 @@ const deleteTestMilestone = async (repository = null, title = null) => {
 module.exports = {
   createTestMilestone,
   deleteTestMilestone,
+  deleteTestMilestoneFromAll,
 };
