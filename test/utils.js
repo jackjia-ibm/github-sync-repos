@@ -18,6 +18,13 @@ const {
 } = require('./constants');
 
 const prepareCliCommand = (args, useToken = false, usePassword = false, useTemplateRepo) => {
+  if (useToken && !process.env[GITHUB_SECRET_TOKEN]) {
+    throw new Error('GitHub token is not provided');
+  }
+  if (usePassword && (!process.env[GITHUB_SECRET_USERNAME] || !process.env[GITHUB_SECRET_PASSWORD])) {
+    throw new Error('GitHub token is not provided');
+  }
+
   const token = useToken ? ['--token', process.env[GITHUB_SECRET_TOKEN]] : [];
   const password = usePassword ? ['--username', process.env[GITHUB_SECRET_USERNAME],
     '--password', process.env[GITHUB_SECRET_PASSWORD]

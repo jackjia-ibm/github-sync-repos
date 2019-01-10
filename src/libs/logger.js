@@ -13,6 +13,7 @@ const createLogger = (level, file) => {
   let transports = [];
 
   transports.push(new winston.transports.Console({
+    stderrLevels: ['error'],
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.splat(),

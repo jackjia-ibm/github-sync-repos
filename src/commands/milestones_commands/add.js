@@ -46,6 +46,9 @@ const handler = async (options) => {
   const logger = options.logger;
   const gh = new GitHub(options);
   const repo = options.repository || options.templateRepo;
+  if (!repo) {
+    throw new Error('Repository is required.');
+  }
   const title = options.milesone;
   const description = options.description;
   const dueOn = options.dueOn;
