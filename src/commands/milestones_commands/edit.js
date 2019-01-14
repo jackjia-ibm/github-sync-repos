@@ -22,7 +22,7 @@ const builder = (yargs) => {
     .options({
       repository: {
         alias: 'repo',
-        description: 'Repository name. Add milestone to this repository. Default value is the template repository.',
+        description: 'Repository name. Edit milestone of this repository. Default value is the template repository.',
         group: 'Milestone Options',
       },
       title: {
