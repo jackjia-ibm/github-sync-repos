@@ -99,7 +99,7 @@ describe('should be able to add milestone to repository', function() {
   it('should be able to create a milestone with description and due date without error', async function() {
     let nextYear = new Date();
     nextYear.setFullYear(nextYear.getFullYear() + 1);
-    nextYear = nextYear.toISOString().substr(0, 10);
+    nextYear = nextYear.toISOString();
     const description = 'test description';
 
     const {
