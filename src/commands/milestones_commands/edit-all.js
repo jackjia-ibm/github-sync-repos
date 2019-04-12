@@ -70,6 +70,9 @@ const handler = async (options) => {
     } catch (err) {
       if (err && err.message && err.message.indexOf('Cannot find milestone') > -1) {
         logger.info(` - ${chalk.blue(repo.name)}: ${chalk.yellow('doesn\'t exist')}`);
+      } else if (err && err.name === 'HttpError' &&
+        err.errors && err.errors[0] && err.errors[0].code && err.errors[0].code === 'already_exists') {
+        logger.info(` - ${chalk.blue(repo.name)}: ${chalk.yellow('already exists')}`);
       } else {
         if (options.verbose) {
           logger.debug(err);
