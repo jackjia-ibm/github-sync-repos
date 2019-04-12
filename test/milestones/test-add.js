@@ -100,6 +100,7 @@ describe('should be able to add milestone to repository', function() {
     let nextYear = new Date();
     nextYear.setFullYear(nextYear.getFullYear() + 1);
     nextYear = nextYear.toISOString();
+    let nextYearDateOnly = nextYear.substr(0, 10);
     const description = 'test description';
 
     const {
@@ -124,7 +125,7 @@ describe('should be able to add milestone to repository', function() {
 
     expect(resultList.stderr).to.be.empty;
     expect(resultList.stdout).to.match(new RegExp(`Total [0-9]+ milestone\\(s\\) in repository ${GITHUB_TEMPLATE_REPO}:`));
-    expect(resultList.stdout).to.match(new RegExp(`- #[0-9]+ ${milestone}: ${description}\\s+\\(📅 ${nextYear}T`));
+    expect(resultList.stdout).to.match(new RegExp(`- #[0-9]+ ${milestone}: ${description}\\s+\\(📅 ${nextYearDateOnly}T`));
 
     expect(resultDelete).to.have.property('stdout');
     expect(resultDelete).to.have.property('stderr');
